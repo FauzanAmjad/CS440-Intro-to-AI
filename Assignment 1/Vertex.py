@@ -1,4 +1,5 @@
 import pygame
+import pygame_gui
 
 
 class vertex:
@@ -11,12 +12,15 @@ class vertex:
         self.is_closed = False
         self.gvalue = 0
         self.hvalue = 0
-        self.rect = None
+        self.clickable = None
 
-    def draw_vertex(self, surface):
-        pygame.draw.circle(surface, (0, 0, 0), self.img_coords, 5)
-        self.rect = pygame.Rect(0, 0, 10, 10)
-        self.rect.center = self.img_coords
+    def draw_vertex(self, surface, manager: pygame_gui.UIManager):
+        #pygame.draw.circle(surface, (0, 0, 0), self.img_coords, 5)
+        rect = pygame.Rect(0, 0, 10, 10)
+        rect.center = self.img_coords
+        self.clickable = pygame_gui.elements.UIButton(relative_rect= rect,
+                                                    text=" ",
+                                                    manager=manager)
 
     def draw_lines(self, surface):
         for vert in self.neighbors:

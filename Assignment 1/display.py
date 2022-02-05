@@ -21,31 +21,30 @@ blockedycoord = []
 
 
 def main():
+    # making the display
+    grid_width = 480
+    grid_height = 360
     pygame.init()
-    window = pygame.display.set_mode((960, 600))
+    window = pygame.display.set_mode((grid_width * 3 / 2, grid_height * 3 / 2))
     window.fill((255, 255, 255))
-    clicked = False
-    view_rect = pygame.Rect(0, 0, 480, 360)
+    view_rect = pygame.Rect(0, 0, grid_width, grid_height)
     view_rect.center = window.get_rect().center
     pygame.display.set_caption('A*/Theta* simulation')
-    draw_grid(window, view_rect.width, view_rect.height, 4, view_rect)
-    for n in vertices[(0, 0)].neighbors:
-        print(n.coords)
+    manager = pygame_gui.UIManager((window.get_width(), window.get_height()), 'theme.json')
+    draw_grid(window, view_rect.width, view_rect.height, 4, view_rect, manager)
+    clock = pygame.time.Clock()
     while True:
+        time_delta = clock.tick(60) / 1000.0
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.display.quit()
+                pygame.quit()
+                sys.exit()
+            manager.process_events(event)
 
-        if pygame.event.get(pygame.QUIT):
-            pygame.display.quit()
-            pygame.quit()
-            sys.exit()
-        if pygame.event.get(pygame.MOUSEBUTTONDOWN):
-            for key in vertices:
-                if vertices[key].rect.collidepoint(pygame.mouse.get_pos()):
-                    clicked = not clicked
-                    print(f"clicked vertex:{key}")
-                    if clicked:
-                        draw_tooltip(window, 60, 120, vertices[key].img_coords[0], vertices[key].img_coords[1])
-
+        manager.update(time_delta)
         pygame.display.update()
+        manager.draw_ui(window)
 
 
 def readfolder(foldername):
@@ -95,7 +94,7 @@ def readfile(filename):
 # def setupnodes():
 
 
-def draw_grid(window, width, height, cols, view):
+def draw_grid(window, width, height, cols, view, manager):
     size = int(width / cols)
     i = 0
     j = 0
@@ -105,23 +104,23 @@ def draw_grid(window, width, height, cols, view):
             if data[i][j] == 1:
                 pygame.draw.rect(window, (174, 174, 174), rect)
             else:
-                #pygame.draw.rect(window, (0, 0, 0), rect, 1)
+                # pygame.draw.rect(window, (0, 0, 0), rect, 1)
                 add_verts((x, y), (j, i), size)
             i = i + 1
         j = j + 1
         i = 0
 
     for key in vertices:
-        vertices[key].draw_vertex(window)
+        vertices[key].draw_vertex(window, manager)
         vertices[key].draw_lines(window)
-        #print(f"{vertices[key].get_coords()}->{vertices[key].get_img_coords()}")
+        # print(f"{vertices[key].get_coords()}->{vertices[key].get_img_coords()}")
 
 
 def create_vert(img_coords: tuple, coords: tuple):
     if coords in vertices:
         return vertices[coords]
     vertices[coords] = vertex(img_coords, coords)
-    return vertex(img_coords, coords)
+    return vertices[coords]
 
 
 def add_verts(img_coords: tuple, coords: tuple, size):
@@ -133,10 +132,11 @@ def add_verts(img_coords: tuple, coords: tuple, size):
         for j in range(0, len(verts)):
             if j != i:
                 verts[i].neighbors.append(verts[j])
-                print(f"{verts[i].coords}->{verts[j].coords}")
 
-def draw_tooltip(surface, width, height, x,y):
+
+def draw_tooltip(surface, width, height, x, y):
     rect = pygame.Rect(x, y, width, height)
-    pygame.draw.rect(surface, (208, 208, 208), rect, border_radius= width//8)
+    pygame.draw.rect(surface, (208, 208, 208), rect, border_radius=width // 8)
+
 
 main()

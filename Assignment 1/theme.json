@@ -1,0 +1,29 @@
+ {
+     "button":
+     {
+         "colours":
+         {
+             "normal_bg": "#000000",
+             "hovered_bg": "#787878",
+             "selected_bg": "#d10000",
+             "active_bg": "#d10000"
+
+         },
+         "misc":
+         {
+             "shape": "ellipse",
+             "tool_tip_delay": "1.0",
+             "text_horiz_alignment": "left",
+             "text_vert_alignment": "top",
+             "text_horiz_alignment_padding": "10",
+             "text_vert_alignment_padding": "5",
+             "text_shadow_size": "1",
+             "text_shadow_offset": "0,0",
+             "state_transitions":
+             {
+                 "normal_hovered": "0.05",
+                 "hovered_normal": "0.05"
+             }
+         }
+     }
+ }
