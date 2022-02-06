@@ -3,10 +3,10 @@ from Vertex import vertex
 
 data = [
     [0, 0, 0, 0],
-    [0, 1, 0, 0],
-    [1, 0, 1, 0]
+    [0, 0, 1, 1],
+    [1, 0, 1, 1]
 ]
-
+# ((vertex.coords, <vertex object>))
 vertices = {}
 filewidth = 0
 filelength = 0
@@ -22,6 +22,8 @@ blockedycoord = []
 
 def main():
     # making the display
+    grid_cols = 4
+    grid_rows = 3
     grid_width = 480
     grid_height = 360
     pygame.init()
@@ -31,7 +33,9 @@ def main():
     view_rect.center = window.get_rect().center
     pygame.display.set_caption('A*/Theta* simulation')
     manager = pygame_gui.UIManager((window.get_width(), window.get_height()), 'theme.json')
-    draw_grid(window, view_rect.width, view_rect.height, 4, view_rect, manager)
+    draw_grid(window, view_rect.width, view_rect.height, grid_cols, view_rect, manager)
+    cache = pygame.Surface.copy(window)
+    text_box = None
     clock = pygame.time.Clock()
     while True:
         time_delta = clock.tick(60) / 1000.0
@@ -40,8 +44,30 @@ def main():
                 pygame.display.quit()
                 pygame.quit()
                 sys.exit()
-            manager.process_events(event)
 
+            if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                window.blit(source=cache, dest=(0, 0))
+                for key in vertices:
+                    if event.ui_element == vertices[key].clickable:
+                        if text_box is not None:
+                            text_box.hide()
+                            text_box = None
+                        if not vertices[key].is_clicked:
+                            rect = pygame.Rect(vertices[key].img_coords[0], vertices[key].img_coords[1], grid_width / 4,
+                                               grid_width / 3)
+                            if vertices[key].coords[1] > grid_rows/2:
+                                rect.bottomleft = (vertices[key].img_coords[0], vertices[key].img_coords[1])
+                            if vertices[key].coords[0] > grid_cols/2:
+                                rect.right = vertices[key].img_coords[0]
+                            text_box = pygame_gui.elements.UITextBox(html_text=f"   <u>{vertices[key].coords}</u><br>"
+                                                                               f"g: {vertices[key].gvalue}<br>"
+                                                                               f"h: {vertices[key].hvalue}<br>"
+                                                                               f"f: {vertices[key].gvalue+vertices[key].hvalue}<br>",
+                                                                     relative_rect=rect, manager=manager)
+                            vertices[key].is_clicked = True
+                        else:
+                            vertices[key].is_clicked = False
+            manager.process_events(event)
         manager.update(time_delta)
         pygame.display.update()
         manager.draw_ui(window)
@@ -88,10 +114,6 @@ def readfile(filename):
                         blockedycoord.append(localy)
             internalcount = internalcount + 1
         count = count + 1
-    # setupnodes()
-
-
-# def setupnodes():
 
 
 def draw_grid(window, width, height, cols, view, manager):
@@ -113,7 +135,6 @@ def draw_grid(window, width, height, cols, view, manager):
     for key in vertices:
         vertices[key].draw_vertex(window, manager)
         vertices[key].draw_lines(window)
-        # print(f"{vertices[key].get_coords()}->{vertices[key].get_img_coords()}")
 
 
 def create_vert(img_coords: tuple, coords: tuple):
@@ -134,9 +155,13 @@ def add_verts(img_coords: tuple, coords: tuple, size):
                 verts[i].neighbors.append(verts[j])
 
 
-def draw_tooltip(surface, width, height, x, y):
-    rect = pygame.Rect(x, y, width, height)
-    pygame.draw.rect(surface, (208, 208, 208), rect, border_radius=width // 8)
+def draw_path(endpoint: vertex, window):
+    vert = endpoint.parent
+    prev_point = endpoint.img_coords
+    while vert is not None:
+        pygame.draw.line(window, (255, 46, 31), vert.img_coords, prev_point, 2)
+        prev_point = vert.img_coords
+        vert = vert.parent
 
 
 main()

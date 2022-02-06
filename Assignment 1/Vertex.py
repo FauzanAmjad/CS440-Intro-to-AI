@@ -13,6 +13,7 @@ class vertex:
         self.gvalue = 0
         self.hvalue = 0
         self.clickable = None
+        self.is_clicked = False
 
     def draw_vertex(self, surface, manager: pygame_gui.UIManager):
         #pygame.draw.circle(surface, (0, 0, 0), self.img_coords, 5)
