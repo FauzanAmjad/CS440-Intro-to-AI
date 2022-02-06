@@ -34,10 +34,21 @@ def main():
     pygame.display.set_caption('A*/Theta* simulation')
     manager = pygame_gui.UIManager((window.get_width(), window.get_height()), 'theme.json')
     draw_grid(window, view_rect.width, view_rect.height, grid_cols, view_rect, manager)
-    cache = pygame.Surface.copy(window)
     text_box = None
-    clicked = (0,0)
+    clicked = (0, 0)
     clock = pygame.time.Clock()
+
+    # path drawing example:
+
+    # vertices[(4,3)].parent = vertices[(3,2)]
+    # vertices[(3, 2)].parent = vertices[(2, 2)]
+    # vertices[(2, 2)].parent = vertices[(1, 1)]
+    # vertices[(1, 1)].parent = vertices[(0, 0)]
+    # draw_path(vertices[(4, 3)], window)
+
+    # make sure path is drawn before the image is cached
+    cache = pygame.Surface.copy(window)
+
     while True:
         time_delta = clock.tick(60) / 1000.0
         for event in pygame.event.get():
@@ -59,14 +70,14 @@ def main():
                             clicked = key
                             rect = pygame.Rect(vertices[key].img_coords[0], vertices[key].img_coords[1], grid_width / 4,
                                                grid_width / 3)
-                            if vertices[key].coords[1] > grid_rows/2:
+                            if vertices[key].coords[1] > grid_rows / 2:
                                 rect.bottomleft = (vertices[key].img_coords[0], vertices[key].img_coords[1])
-                            if vertices[key].coords[0] > grid_cols/2:
+                            if vertices[key].coords[0] > grid_cols / 2:
                                 rect.right = vertices[key].img_coords[0]
                             text_box = pygame_gui.elements.UITextBox(html_text=f"   <u>{vertices[key].coords}</u><br>"
                                                                                f"g: {vertices[key].gvalue}<br>"
                                                                                f"h: {vertices[key].hvalue}<br>"
-                                                                               f"f: {vertices[key].gvalue+vertices[key].hvalue}<br>",
+                                                                               f"f: {vertices[key].gvalue + vertices[key].hvalue}<br>",
                                                                      relative_rect=rect, manager=manager)
                             vertices[key].is_clicked = True
                         else:
@@ -163,7 +174,7 @@ def draw_path(endpoint: vertex, window):
     vert = endpoint.parent
     prev_point = endpoint.img_coords
     while vert is not None:
-        pygame.draw.line(window, (255, 46, 31), vert.img_coords, prev_point, 2)
+        pygame.draw.line(window, (255, 46, 31), vert.img_coords, prev_point, 4)
         prev_point = vert.img_coords
         vert = vert.parent
 
