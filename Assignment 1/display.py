@@ -243,16 +243,136 @@ def lineofsight(sourcex, sourcey,pointx, pointy):
             y0=y0+sy
     return True
 
+def new_cmp_lt(self,a,b):
+    return a.fvalue<b.fvalue
 
 def Astar():
     #Compute h for all of them
+    for key in vertices:
+        tempx=vertices[key].coords[0]
+        tempy=vertices[key].coords[1]
+        hval=hfunction(tempx, tempy)
+        vertices[key].hvalue=hval
+        vertices[key].fvalue=hval
+
 
     #Start
+    vertices[startindex].parent=vertices[startindex]
+    fringe=[]
+    heapq.heappush(fringe, vertices[startindex])
 
-    #Update Vertex
-
+    while fringe:
+        currentv=heapq.heappop(fringe)
+        if currentv.coords[0]==goalx and currentv.coords[1]==goaly:
+            print("Path found")
+            return True
+        currentv.closed=True
+        currentneighborlist=currentv.neighbors
+        for n in currentneighborlist:
+            if n.closed==False:
+                #Update Vertex if applicable
+                gs=currentv.gvalue
+                #Determine path cost
+                cost=0
+                nx=n.coords[0]
+                ny=n.coords[1]
+                currx=currentv.coords[0]
+                curry=currentv.coords[1]
+                if nx != currx and ny != curry:
+                    cost=math.sqrt(2)
+                else:
+                    cost=1
+                #See if path cost is less
+                if gs + cost < n.gvalue:
+                    n.gvalue=gs+cost
+                    n.fvalue=n.hvalue+n.gvalue
+                    n.parent=currentv
+                    if n in fringe:
+                        fringe.remove(n)
+                    heapq.heapify(fringe)
+                    heapq.heappush(fringe,n)
+    print("No path found")
+    return False
 
 def Thetastar():
+
+    #Reset f's and g's
+    for key in vertices:
+        vertices[key].gvalue=math.inf
+        vertices[key].fvalue=vertices[key].hvalue
+    #Main part
+    # Start
+    vertices[startindex].parent = vertices[startindex]
+    fringe = []
+    heapq.heappush(fringe, vertices[startindex])
+
+    while fringe:
+        currentv = heapq.heappop(fringe)
+        if currentv.coords[0] == goalx and currentv.coords[1] == goaly:
+            print("Path found")
+            return True
+        currentv.closed = True
+        currentneighborlist = currentv.neighbors
+        for n in currentneighborlist:
+            if n.closed == False:
+                # Update Vertex if applicable
+                gs = currentv.gvalue
+                # Determine path cost
+                cost = 0
+                nx = n.coords[0]
+                ny = n.coords[1]
+                currx = currentv.coords[0]
+                curry = currentv.coords[1]
+                if nx != currx and ny != curry:
+                    cost = math.sqrt(2)
+                else:
+                    cost = 1
+
+                currparent=currentv.parent
+                parentx=currparent.coords[0]
+                parenty=currparent.coords[1]
+
+                #Cost between parent and s'
+                distance=math.sqrt(pow((nx-parentx),2)+pow((ny-parenty),2))
+
+                if lineofsight(parentx, parenty, nx, ny):
+                    if currparent.gvalue + distance < n.gvalue:
+                        n.gvalue=currparent.gvalue+distance
+                        n.parent=currparent
+                        if n in fringe:
+                            fringe.remove(n)
+                        heapq.heapify(fringe)
+                        heapq.heappush(fringe, n)
+                else:
+                    # See if path cost is less
+                    if gs + cost < n.gvalue:
+                        n.gvalue = gs + cost
+                        n.fvalue = n.hvalue + n.gvalue
+                        n.parent = currentv
+                        if n in fringe:
+                            fringe.remove(n)
+                        heapq.heapify(fringe)
+                        heapq.heappush(fringe, n)
+    print("No path found")
+    return False
+
+def is_path_bfs():
+    startvertex=vertices[startindex]
+    visited=[]
+    q=[]
+    q.append(startvertex)
+    while q:
+        currv=q.pop(0)
+        nlist=currv.neighbors
+        for element in nlist:
+            if element not in visited:
+                q.append(element)
+                visited.append(element)
+            if element.coords[0]==goalx and element.coords[1]==goaly:
+                return True
+    return False
+
+
 
 
 main()
