@@ -3,8 +3,8 @@ from Vertex import vertex
 
 data = [
     [0, 0, 0, 0],
-    [0, 0, 1, 1],
-    [1, 0, 1, 1]
+    [0, 0, 0, 1],
+    [1, 0, 1, 0]
 ]
 # ((vertex.coords, <vertex object>))
 vertices = {}
@@ -36,6 +36,7 @@ def main():
     draw_grid(window, view_rect.width, view_rect.height, grid_cols, view_rect, manager)
     cache = pygame.Surface.copy(window)
     text_box = None
+    clicked = (0,0)
     clock = pygame.time.Clock()
     while True:
         time_delta = clock.tick(60) / 1000.0
@@ -47,12 +48,15 @@ def main():
 
             if event.type == pygame_gui.UI_BUTTON_PRESSED:
                 window.blit(source=cache, dest=(0, 0))
+                vertices[clicked].clickable.unselect()
                 for key in vertices:
                     if event.ui_element == vertices[key].clickable:
                         if text_box is not None:
                             text_box.hide()
                             text_box = None
                         if not vertices[key].is_clicked:
+                            vertices[key].clickable.select()
+                            clicked = key
                             rect = pygame.Rect(vertices[key].img_coords[0], vertices[key].img_coords[1], grid_width / 4,
                                                grid_width / 3)
                             if vertices[key].coords[1] > grid_rows/2:
