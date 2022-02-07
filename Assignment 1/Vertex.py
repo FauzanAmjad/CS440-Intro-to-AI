@@ -39,3 +39,5 @@ class vertex:
             return True
         else:
             return False
+    def __lt__(self, other):
+        return self.fvalue < other.fvalue

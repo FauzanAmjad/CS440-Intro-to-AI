@@ -1,14 +1,17 @@
-import pygame, sys, os, pygame_gui
-from .Vertex import vertex
+import pygame, sys, os
+import Vertex
+import pygame_gui
 import heapq
 import math
+
+
 
 data = [
     [0, 0, 0, 0],
     [0, 1, 0, 0],
     [1, 0, 1, 0]
 ]
-
+data=None
 vertices = {}
 filewidth = 0
 filelength = 0
@@ -51,7 +54,9 @@ def main():
     view_rect.center = window.get_rect().center
     pygame.display.set_caption('A*/Theta* simulation')
     manager = pygame_gui.UIManager((window.get_width(), window.get_height()), 'theme.json')
-    draw_grid(window, view_rect.width, view_rect.height, 4, view_rect, manager)
+    draw_grid(window, view_rect.width, view_rect.height, filewidth, view_rect, manager)
+    Astar()
+    Thetastar()
     clock = pygame.time.Clock()
     while True:
         time_delta = clock.tick(60) / 1000.0
@@ -74,6 +79,16 @@ def main():
 def readfile(filename):
     f = open(filename, "r")
     count = 1
+    global startx
+    global starty
+    global data
+    global goalx
+    global goaly
+    global filewidth
+    global filelength
+    global temparr
+    global blockedxcoord
+    global blockedycoord
     for line in f:
         internalcount = 1
         localx = 0
@@ -96,8 +111,14 @@ def readfile(filename):
                 elif internalcount == 2:
                     filelength = int(word)
             else:
-                if count == 4:
-                    temparr = [[0] * filewidth] * filelength
+                if count == 4 and internalcount==1:
+                    #temparr = [[0] * filewidth] * filelength
+                    temparr=[]
+                    for i in range (0,filelength):
+                        new=[]
+                        for j in range (0,filewidth):
+                            new.append(0)
+                        temparr.append(new)
                 if internalcount == 1:
                     localx = int(word)
                 elif internalcount == 2:
@@ -107,18 +128,22 @@ def readfile(filename):
                     if indicator == 1:
                         blockedxcoord.append(localx)
                         blockedycoord.append(localy)
-                        temparr[localy-1][localx-1]=1
+                        in1=localy-1
+                        in2=localx-1
+                        temparr[in1][in2]=1
 
 
             internalcount = internalcount + 1
         count = count + 1
-    # setupnodes()
+    data=temparr
 
 
 # def setupnodes():
 
 
 def draw_grid(window, width, height, cols, view, manager):
+    global startindex
+    global endindex
     size = int(width / cols)
     i = 0
     j = 0
@@ -129,7 +154,7 @@ def draw_grid(window, width, height, cols, view, manager):
                 pygame.draw.rect(window, (174, 174, 174), rect)
             else:
                 # pygame.draw.rect(window, (0, 0, 0), rect, 1)
-                add_verts((x, y), (j, i), size)
+                add_verts((x, y), (j+1, i+1), size)
             i = i + 1
         j = j + 1
         i = 0
@@ -148,7 +173,7 @@ def draw_grid(window, width, height, cols, view, manager):
 def create_vert(img_coords: tuple, coords: tuple):
     if coords in vertices:
         return vertices[coords]
-    vertices[coords] = vertex(img_coords, coords)
+    vertices[coords] = Vertex.vertex(img_coords, coords)
     return vertices[coords]
 
 
@@ -160,7 +185,8 @@ def add_verts(img_coords: tuple, coords: tuple, size):
     for i in range(0, len(verts)):
         for j in range(0, len(verts)):
             if j != i:
-                verts[i].neighbors.append(verts[j])
+                if verts[j] not in verts[i].neighbors:
+                    verts[i].neighbors.append(verts[j])
 
 
 def draw_tooltip(surface, width, height, x, y):
@@ -258,6 +284,7 @@ def Astar():
 
     #Start
     vertices[startindex].parent=vertices[startindex]
+    vertices[startindex].gvalue=0
     fringe=[]
     heapq.heappush(fringe, vertices[startindex])
 
@@ -266,10 +293,10 @@ def Astar():
         if currentv.coords[0]==goalx and currentv.coords[1]==goaly:
             print("Path found")
             return True
-        currentv.closed=True
+        currentv.is_closed=True
         currentneighborlist=currentv.neighbors
         for n in currentneighborlist:
-            if n.closed==False:
+            if n.is_closed==False:
                 #Update Vertex if applicable
                 gs=currentv.gvalue
                 #Determine path cost
@@ -283,14 +310,16 @@ def Astar():
                 else:
                     cost=1
                 #See if path cost is less
-                if gs + cost < n.gvalue:
+                if gs==float("inf") or gs + cost < n.gvalue:
                     n.gvalue=gs+cost
                     n.fvalue=n.hvalue+n.gvalue
                     n.parent=currentv
                     if n in fringe:
                         fringe.remove(n)
                     heapq.heapify(fringe)
+
                     heapq.heappush(fringe,n)
+
     print("No path found")
     return False
 
@@ -303,6 +332,7 @@ def Thetastar():
     #Main part
     # Start
     vertices[startindex].parent = vertices[startindex]
+    vertices[startindex].gvalue = 0
     fringe = []
     heapq.heappush(fringe, vertices[startindex])
 
@@ -311,10 +341,10 @@ def Thetastar():
         if currentv.coords[0] == goalx and currentv.coords[1] == goaly:
             print("Path found")
             return True
-        currentv.closed = True
+        currentv.is_closed = True
         currentneighborlist = currentv.neighbors
         for n in currentneighborlist:
-            if n.closed == False:
+            if n.is_closed == False:
                 # Update Vertex if applicable
                 gs = currentv.gvalue
                 # Determine path cost
@@ -345,7 +375,7 @@ def Thetastar():
                         heapq.heappush(fringe, n)
                 else:
                     # See if path cost is less
-                    if gs + cost < n.gvalue:
+                    if gs==float("inf") or gs + cost < n.gvalue:
                         n.gvalue = gs + cost
                         n.fvalue = n.hvalue + n.gvalue
                         n.parent = currentv
@@ -353,6 +383,7 @@ def Thetastar():
                             fringe.remove(n)
                         heapq.heapify(fringe)
                         heapq.heappush(fringe, n)
+
     print("No path found")
     return False
 
