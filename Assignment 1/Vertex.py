@@ -1,5 +1,6 @@
 import pygame
 import pygame_gui
+import math
 
 
 class vertex:
@@ -10,7 +11,7 @@ class vertex:
         self.neighbors = []
         self.parent = None
         self.is_closed = False
-        self.gvalue = 0
+        self.gvalue = math.inf
         self.hvalue = 0
         self.clickable = None
         self.is_clicked = False
@@ -32,3 +33,15 @@ class vertex:
 
     def close(self):
         self.is_closed = True
+
+    def close(self):
+        self.is_closed = True
+
+    def _eq_(self, other):
+        if self.coords[0] == other.coords[0] and self.coords[1] == other.coords[1]:
+            return True
+        else:
+            return False
+
+    def __lt__(self, other):
+        return self.fvalue < other.fvalue
