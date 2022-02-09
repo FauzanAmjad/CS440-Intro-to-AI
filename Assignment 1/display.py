@@ -85,7 +85,6 @@ def main():
 
             if event.type == pygame_gui.UI_BUTTON_PRESSED:
                 if event.ui_element == toggle:
-                    print("click")
                     if toggle_Astar:
                         toggle.select()
                         toggle.set_text("A*")
