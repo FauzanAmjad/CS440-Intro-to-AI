@@ -60,7 +60,7 @@ def main():
     manager = pygame_gui.UIManager((window.get_width(), window.get_height()), 'theme.json')
     draw_grid(window, view_rect.width, view_rect.height, grid_cols, view_rect, manager)
     text_box = None
-    clicked = (1, 1)
+    clicked = next(iter(vertices))
     clock = pygame.time.Clock()
     option_rect_1 = pygame.Rect(0, 0, grid_width * (1 / 4), grid_height)
 
@@ -251,8 +251,9 @@ def add_verts(img_coords: tuple, coords: tuple, size):
 def draw_path(endpoint: vertex, window, color):
     vert = endpoint.parent
     prev_point = endpoint.img_coords
+    size = 4 if window.get_width()<50 else 2
     while vert is not None and prev_point != vert.img_coords:
-        pygame.draw.line(window, color, vert.img_coords, prev_point, 4)
+        pygame.draw.line(window, color, vert.img_coords, prev_point, size)
         prev_point = vert.img_coords
         vert = vert.parent
 
