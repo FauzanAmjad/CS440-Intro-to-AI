@@ -16,8 +16,8 @@ class vertex:
         self.clickable = None
         self.is_clicked = False
 
-    def draw_vertex(self, surface, manager: pygame_gui.UIManager, marked=False):
-        size = 10 if surface.get_width() < 50 else 5
+    def draw_vertex(self, surface, manager: pygame_gui.UIManager, cols, marked=False):
+        size = 10 if cols < 50 else 5
         rect = pygame.Rect(0, 0, size, size)
         rect.center = self.img_coords
         if marked:

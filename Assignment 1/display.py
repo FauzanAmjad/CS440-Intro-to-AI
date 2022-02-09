@@ -112,8 +112,8 @@ def main():
                         if not vertices[key].is_clicked:
                             vertices[key].clickable.select()
                             clicked = key
-                            rect = pygame.Rect(vertices[key].img_coords[0], vertices[key].img_coords[1], grid_width / 4,
-                                               grid_width / 3)
+                            rect = pygame.Rect(vertices[key].img_coords[0], vertices[key].img_coords[1], 120,
+                                               160)
                             if vertices[key].coords[1] > grid_rows / 2:
                                 rect.bottomleft = (vertices[key].img_coords[0], vertices[key].img_coords[1])
                             if vertices[key].coords[0] > grid_cols / 2:
@@ -223,9 +223,9 @@ def draw_grid(window, width, height, cols, view, manager):
 
     for key in vertices:
         if key == startindex or key == endindex:
-            vertices[key].draw_vertex(window, manager, marked=True)
+            vertices[key].draw_vertex(window, manager, filewidth, marked=True)
         else:
-            vertices[key].draw_vertex(window, manager)
+            vertices[key].draw_vertex(window, manager, filewidth)
         vertices[key].draw_lines(window)
 
 
@@ -251,7 +251,7 @@ def add_verts(img_coords: tuple, coords: tuple, size):
 def draw_path(endpoint: vertex, window, color):
     vert = endpoint.parent
     prev_point = endpoint.img_coords
-    size = 4 if window.get_width()<50 else 2
+    size = 4 if filewidth <50 else 2
     while vert is not None and prev_point != vert.img_coords:
         pygame.draw.line(window, color, vert.img_coords, prev_point, size)
         prev_point = vert.img_coords
