@@ -14,12 +14,12 @@ filewidth = 0
 filelength = 0
 blockedcells = []
 filelist = []
-startx = 0
-starty = 0
-startindex= 0
-endindex= 0
-goalx = 0
-goaly = 0
+startx = 1
+starty = 1
+startindex= (1,1)
+endindex= (5,4)
+goalx = 5
+goaly = 4
 blockedxcoord = []
 blockedycoord = []
 temparr= []
@@ -30,19 +30,20 @@ BLUE = (69, 118, 255)
 
 def main():
     # specify input type
-    print("This program either takes input in File Form or in Auto-Generated Form")
-    inputform = input("Enter \"File\" or \"Auto-Generated\" for Input Type:")
+    if len(sys.argv) < 2:
+        print("This program either takes input in File Form or in Auto-Generated Form")
+        inputform = input("Enter \"File\" or \"Auto-Generated\" for Input Type:")
 
-    if inputform == "File":
-        file = input("Please enter path where test files is located: ")
-        readfile(file)
-    elif inputform == "Auto-Generated":
-        print()
-    # logic for this
-    else:
-        print("Invalid Input Type; Program is Exiting")
-        exit()
-
+        if inputform == "File":
+            file = input("Please enter path where test files is located: ")
+            readfile(file)
+        elif inputform == "Auto-Generated":
+            print()
+        # logic for this
+        else:
+            print("Invalid Input Type; Program is Exiting")
+            exit()
+    readfile(sys.argv[1])
 
     # making the display
     grid_cols = 4
@@ -60,18 +61,11 @@ def main():
     text_box = None
     clicked = (1, 1)
     clock = pygame.time.Clock()
-    #Astar()
-    # path drawing example:
+    Astar()
+    draw_path(vertices[endindex], window, RED)
+    # Thetastar()
+    # draw_path(vertices[endindex], window, BLUE)
 
-    # vertices[(4,3)].parent = vertices[(3,2)]
-    # vertices[(3, 2)].parent = vertices[(2, 2)]
-    # vertices[(2, 2)].parent = vertices[(1, 1)]
-    # vertices[(1, 1)].parent = vertices[(0, 0)]
-    #draw_path(vertices[endindex], window, RED)
-
-    Thetastar()
-    draw_path(vertices[endindex], window, BLUE)
-    print(vertices[(3,2)].parent.coords)
     # make sure path is drawn before the image is cached
     cache = pygame.Surface.copy(window)
 
@@ -268,7 +262,7 @@ def lineofsight(sourcex, sourcey, pointx, pointy):
     else:
         sx = 1
     if dx >= dy:
-        while (x0 != x1):
+        while x0 != x1:
             f = f + dy
             addx0 = -1
             addy0 = -1
