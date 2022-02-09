@@ -26,6 +26,33 @@
              }
          }
      },
+     "#important_button":
+     {
+         "colours":
+         {
+             "normal_bg": "#d10000",
+             "hovered_bg": "#fc9d4e",
+             "selected_bg": "#4275ff",
+             "active_bg": "#4275ff"
+
+         },
+         "misc":
+         {
+             "shape": "ellipse",
+             "tool_tip_delay": "0.10",
+             "text_horiz_alignment": "left",
+             "text_vert_alignment": "top",
+             "text_horiz_alignment_padding": "10",
+             "text_vert_alignment_padding": "5",
+             "text_shadow_size": "1",
+             "text_shadow_offset": "0,0",
+             "state_transitions":
+             {
+                 "normal_hovered": "0.05",
+                 "hovered_normal": "0.05"
+             }
+         }
+     },
      "text_box":
      {
          "colours":

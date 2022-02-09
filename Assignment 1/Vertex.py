@@ -16,13 +16,18 @@ class vertex:
         self.clickable = None
         self.is_clicked = False
 
-    def draw_vertex(self, surface, manager: pygame_gui.UIManager):
-        #pygame.draw.circle(surface, (0, 0, 0), self.img_coords, 5)
+    def draw_vertex(self, surface, manager: pygame_gui.UIManager, marked=False):
         rect = pygame.Rect(0, 0, 10, 10)
         rect.center = self.img_coords
-        self.clickable = pygame_gui.elements.UIButton(relative_rect= rect,
-                                                    text=" ",
-                                                    manager=manager)
+        if marked:
+            self.clickable = pygame_gui.elements.UIButton(relative_rect=rect,
+                                                          text=" ",
+                                                          manager=manager, object_id="#important_button")
+        else:
+            self.clickable = pygame_gui.elements.UIButton(relative_rect=rect,
+                                                          text=" ",
+                                                          manager=manager)
+
 
     def draw_lines(self, surface):
         for vert in self.neighbors:

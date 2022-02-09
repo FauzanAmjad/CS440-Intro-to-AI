@@ -1,6 +1,5 @@
-import pygame, sys, os
-import Vertex
-import pygame_gui
+import pygame, sys, os, pygame_gui
+from Vertex import vertex
 import heapq
 import math
 
@@ -9,7 +8,6 @@ data = [
     [0, 0, 0, 1],
     [1, 0, 1, 0]
 ]
-data=None
 # ((vertex.coords, <vertex object>))
 vertices = {}
 filewidth = 0
@@ -18,14 +16,16 @@ blockedcells = []
 filelist = []
 startx = 0
 starty = 0
-startindex =0
-endindex=0
+startindex= 0
+endindex= 0
 goalx = 0
 goaly = 0
 blockedxcoord = []
 blockedycoord = []
-temparr= None
+temparr= []
 directory=""
+RED = (255, 46, 31)
+BLUE = (69, 118, 255)
 
 
 def main():
@@ -43,11 +43,12 @@ def main():
         print("Invalid Input Type; Program is Exiting")
         exit()
 
+
     # making the display
     grid_cols = 4
     grid_rows = 3
     grid_width = 480
-    grid_height = 240
+    grid_height = 360
     pygame.init()
     window = pygame.display.set_mode((grid_width * 3 / 2, grid_height * 3 / 2))
     window.fill((255, 255, 255))
@@ -55,24 +56,26 @@ def main():
     view_rect.center = window.get_rect().center
     pygame.display.set_caption('A*/Theta* simulation')
     manager = pygame_gui.UIManager((window.get_width(), window.get_height()), 'theme.json')
-    draw_grid(window, view_rect.width, view_rect.height, filewidth, view_rect, manager)
+    draw_grid(window, view_rect.width, view_rect.height, grid_cols, view_rect, manager)
     text_box = None
-    clicked = (0, 0)
+    clicked = (1, 1)
     clock = pygame.time.Clock()
-    Astar()
-    Thetastar()
-
+    #Astar()
     # path drawing example:
 
     # vertices[(4,3)].parent = vertices[(3,2)]
     # vertices[(3, 2)].parent = vertices[(2, 2)]
     # vertices[(2, 2)].parent = vertices[(1, 1)]
     # vertices[(1, 1)].parent = vertices[(0, 0)]
-    # draw_path(vertices[(4, 3)], window)
+    #draw_path(vertices[endindex], window, RED)
 
+    Thetastar()
+    draw_path(vertices[endindex], window, BLUE)
+    print(vertices[(3,2)].parent.coords)
     # make sure path is drawn before the image is cached
     cache = pygame.Surface.copy(window)
 
+    # event loop
     while True:
         time_delta = clock.tick(60) / 1000.0
         for event in pygame.event.get():
@@ -99,9 +102,9 @@ def main():
                             if vertices[key].coords[0] > grid_cols / 2:
                                 rect.right = vertices[key].img_coords[0]
                             text_box = pygame_gui.elements.UITextBox(html_text=f"   <u>{vertices[key].coords}</u><br>"
-                                                                               f"g: {vertices[key].gvalue}<br>"
-                                                                               f"h: {vertices[key].hvalue}<br>"
-                                                                               f"f: {vertices[key].gvalue + vertices[key].hvalue}<br>",
+                                                                               f"g: {'{:.2f}'.format(vertices[key].gvalue)}<br>"
+                                                                               f"h: {'{:.2f}'.format(vertices[key].hvalue)}<br>"
+                                                                               f"f: {'{:.2f}'.format(vertices[key].gvalue + vertices[key].hvalue)}<br>",
                                                                      relative_rect=rect, manager=manager)
                             vertices[key].is_clicked = True
                         else:
@@ -112,12 +115,16 @@ def main():
         manager.draw_ui(window)
 
 
+def readfolder(foldername):
+    filelist = os.list("testfiles/")
 
 
 def readfile(filename):
     f = open(filename, "r")
     count = 1
     global startx
+    global startindex
+    global endindex
     global starty
     global data
     global goalx
@@ -127,6 +134,7 @@ def readfile(filename):
     global temparr
     global blockedxcoord
     global blockedycoord
+
     for line in f:
         internalcount = 1
         localx = 0
@@ -143,18 +151,19 @@ def readfile(filename):
                     goalx = int(word)
                 elif internalcount == 2:
                     goaly = int(word)
+
             elif count == 3:
                 if internalcount == 1:
                     filewidth = int(word)
                 elif internalcount == 2:
                     filelength = int(word)
             else:
-                if count == 4 and internalcount==1:
-                    #temparr = [[0] * filewidth] * filelength
-                    temparr=[]
-                    for i in range (0,filelength):
-                        new=[]
-                        for j in range (0,filewidth):
+                if count == 4 and internalcount == 1:
+                    # temparr = [[0] * filewidth] * filelength
+                    temparr = []
+                    for i in range(0, filelength):
+                        new = []
+                        for j in range(0, filewidth):
                             new.append(0)
                         temparr.append(new)
                 if internalcount == 1:
@@ -169,11 +178,12 @@ def readfile(filename):
                         in1=localy-1
                         in2=localx-1
                         temparr[in1][in2]=1
-
+            startindex = (startx, starty)
+            endindex = (goalx, goaly)
 
             internalcount = internalcount + 1
         count = count + 1
-    data=temparr
+    data = temparr
 
 def draw_grid(window, width, height, cols, view, manager):
     global startindex
@@ -194,18 +204,17 @@ def draw_grid(window, width, height, cols, view, manager):
         i = 0
 
     for key in vertices:
-        if vertices[key].coords[0]==startx and vertices[key].coords[1]==starty:
-            startindex=key
-        if vertices[key].coords[0]==goalx and vertices[key].coords[1]==goaly:
-            endindex=key
-        vertices[key].draw_vertex(window, manager)
+        if key == startindex or key == endindex:
+            vertices[key].draw_vertex(window, manager, marked=True)
+        else:
+            vertices[key].draw_vertex(window, manager)
         vertices[key].draw_lines(window)
 
 
 def create_vert(img_coords: tuple, coords: tuple):
     if coords in vertices:
         return vertices[coords]
-    vertices[coords] = Vertex.vertex(img_coords, coords)
+    vertices[coords] = vertex(img_coords, coords)
     return vertices[coords]
 
 
@@ -221,165 +230,165 @@ def add_verts(img_coords: tuple, coords: tuple, size):
                     verts[i].neighbors.append(verts[j])
 
 
-def draw_path(endpoint: Vertex.vertex, window):
+def draw_path(endpoint: vertex, window, color):
     vert = endpoint.parent
     prev_point = endpoint.img_coords
-    while vert is not None:
-        pygame.draw.line(window, (255, 46, 31), vert.img_coords, prev_point, 4)
+    while vert is not None and prev_point != vert.img_coords:
+        pygame.draw.line(window, color, vert.img_coords, prev_point, 4)
         prev_point = vert.img_coords
         vert = vert.parent
 
-def draw_tooltip(surface, width, height, x, y):
-    rect = pygame.Rect(x, y, width, height)
-    pygame.draw.rect(surface, (208, 208, 208), rect, border_radius=width // 8)
 
 def hfunction(pointx, pointy):
-    root2=math.sqrt(2)
-    xminusgoal=abs(pointx-goalx)
-    yminusgoal=abs(pointy-goaly)
-    answer=(root2*min(xminusgoal,yminusgoal))+max(xminusgoal,yminusgoal)-min(xminusgoal,yminusgoal)
+    root2 = math.sqrt(2)
+    xminusgoal = abs(pointx - goalx)
+    yminusgoal = abs(pointy - goaly)
+    answer = (root2 * min(xminusgoal, yminusgoal)) + max(xminusgoal, yminusgoal) - min(xminusgoal, yminusgoal)
     return answer
-def lineofsight(sourcex, sourcey,pointx, pointy):
-    x0=sourcex
-    y0=sourcey
-    x1=pointx
-    y1=pointy
-    f=0
-    dy=y1-y0
-    dx=x1-x0
-    sy=0
-    sx=0
-    if dy<0:
-        dy= -1*dy
-        sy=-1
+
+
+def lineofsight(sourcex, sourcey, pointx, pointy):
+    x0 = sourcex
+    y0 = sourcey
+    x1 = pointx
+    y1 = pointy
+    f = 0
+    dy = y1 - y0
+    dx = x1 - x0
+    sy = 0
+    sx = 0
+    if dy < 0:
+        dy = -1 * dy
+        sy = -1
     else:
-        sy=1
-    if dx<0:
-        dx= -1*dx
-        sx= -1
+        sy = 1
+    if dx < 0:
+        dx = -1 * dx
+        sx = -1
     else:
-        sx=1
+        sx = 1
     if dx >= dy:
         while (x0 != x1):
-            f=f+dy
+            f = f + dy
             addx0 = -1
             addy0 = -1
             if sx == 1:
                 addx0 = 0
             if sy == 1:
                 addy0 = 0
-            blocked= data[y0+addy0-1][x0+addx0-1]
-            blocked2=data[y0-1][x0+addx0-1]
-            blocked3=data[y0-1-1][x0+addx0-1]
+            blocked = data[y0 + addy0 - 1][x0 + addx0 - 1]
+            blocked2 = data[y0 - 1][x0 + addx0 - 1]
+            blocked3 = data[y0 - 1 - 1][x0 + addx0 - 1]
             if f >= dx:
                 if blocked == 1:
                     return False
-                y0=y0+sy
-                f=f-dx
+                y0 = y0 + sy
+                f = f - dx
 
-            if f!=0 and blocked==1:
+            if f != 0 and blocked == 1:
                 return False
-            if dy==0 and blocked2==1 and blocked3==1:
+            if dy == 0 and blocked2 == 1 and blocked3 == 1:
                 return False
-            x0=x0+sx
+            x0 = x0 + sx
 
 
     else:
         while (y0 != y1):
-            f=f+dx
+            f = f + dx
             addx0 = -1
             addy0 = -1
             if sx == 1:
                 addx0 = 0
             if sy == 1:
                 addy0 = 0
-            blocked= data[y0+addy0-1][x0+addx0-1]
-            blocked2=data[y0+addy0-1][x0-1]
-            blocked3=data[y0+addy0-1][x0-1-1]
+            blocked = data[y0 + addy0 - 1][x0 + addx0 - 1]
+            blocked2 = data[y0 + addy0 - 1][x0 - 1]
+            blocked3 = data[y0 + addy0 - 1][x0 - 1 - 1]
             if f >= dy:
                 if blocked == 1:
                     return False
-                x0=x0+sx
-                f=f-dy
+                x0 = x0 + sx
+                f = f - dy
 
-            if f!=0 and blocked==1:
+            if f != 0 and blocked == 1:
                 return False
-            if dx==0 and blocked2==1 and blocked3==1:
+            if dx == 0 and blocked2 == 1 and blocked3 == 1:
                 return False
-            y0=y0+sy
+            y0 = y0 + sy
     return True
 
-def new_cmp_lt(self,a,b):
-    return a.fvalue<b.fvalue
+
+def new_cmp_lt(self, a, b):
+    return a.fvalue < b.fvalue
+
 
 def Astar():
-    #Compute h for all of them
+    # Compute h for all of them
     for key in vertices:
-        tempx=vertices[key].coords[0]
-        tempy=vertices[key].coords[1]
-        hval=hfunction(tempx, tempy)
-        vertices[key].hvalue=hval
-        vertices[key].fvalue=hval
+        tempx = vertices[key].coords[0]
+        tempy = vertices[key].coords[1]
+        hval = hfunction(tempx, tempy)
+        vertices[key].hvalue = hval
+        vertices[key].fvalue = hval
 
-
-    #Start
-    vertices[startindex].parent=vertices[startindex]
-    vertices[startindex].gvalue=0
-    fringe=[]
+    # Start
+    vertices[startindex].parent = None
+    vertices[startindex].gvalue = 0
+    fringe = []
     heapq.heappush(fringe, vertices[startindex])
 
     while fringe:
-        currentv=heapq.heappop(fringe)
-        if currentv.coords[0]==goalx and currentv.coords[1]==goaly:
+        currentv = heapq.heappop(fringe)
+        if currentv.coords[0] == goalx and currentv.coords[1] == goaly:
             print("Path found")
             return True
-        currentv.is_closed=True
-        currentneighborlist=currentv.neighbors
+        currentv.is_closed = True
+        currentneighborlist = currentv.neighbors
         for n in currentneighborlist:
-            if n.is_closed==False:
-                #Update Vertex if applicable
-                gs=currentv.gvalue
-                #Determine path cost
-                cost=0
-                nx=n.coords[0]
-                ny=n.coords[1]
-                currx=currentv.coords[0]
-                curry=currentv.coords[1]
+            if n.is_closed == False:
+                # Update Vertex if applicable
+                gs = currentv.gvalue
+                # Determine path cost
+                cost = 0
+                nx = n.coords[0]
+                ny = n.coords[1]
+                currx = currentv.coords[0]
+                curry = currentv.coords[1]
                 if nx != currx and ny != curry:
-                    cost=math.sqrt(2)
+                    cost = math.sqrt(2)
                 else:
-                    cost=1
-                #See if path cost is less
-                if gs==float("inf") or gs + cost < n.gvalue:
-                    n.gvalue=gs+cost
-                    n.fvalue=n.hvalue+n.gvalue
-                    n.parent=currentv
+                    cost = 1
+                # See if path cost is less
+                if gs == float("inf") or gs + cost < n.gvalue:
+                    n.gvalue = gs + cost
+                    n.fvalue = n.hvalue + n.gvalue
+                    n.parent = currentv
                     if n in fringe:
                         fringe.remove(n)
                     heapq.heapify(fringe)
 
-                    heapq.heappush(fringe,n)
+                    heapq.heappush(fringe, n)
 
     print("No path found")
     return False
 
+
 def Thetastar():
-
-    #Reset f's and g's
+    # Reset f's and g's
     for key in vertices:
-        vertices[key].gvalue=math.inf
-        vertices[key].fvalue=vertices[key].hvalue
-        vertices[key].parent=None
-        vertices[key].is_closed=False
+        vertices[key].gvalue = math.inf
+        vertices[key].fvalue = vertices[key].hvalue
+        vertices[key].parent = None
+        vertices[key].is_closed = False
 
-        #change h values
-        px=vertices[key].coords[0]
-        py=vertices[key].coords[1]
+        # change h values
+        px = vertices[key].coords[0]
+        py = vertices[key].coords[1]
         d = math.sqrt(pow((px - goalx), 2) + pow((py - goaly), 2))
-        vertices[key].hvalue=d
-        vertices[key].fvalue=d
+        vertices[key].hvalue = d
+        vertices[key].fvalue = d
 
-    #Main part
+    # Main part
     # Start
     vertices[startindex].parent = vertices[startindex]
     vertices[startindex].gvalue = 0
@@ -408,25 +417,25 @@ def Thetastar():
                 else:
                     cost = 1
 
-                currparent=currentv.parent
-                parentx=currparent.coords[0]
-                parenty=currparent.coords[1]
+                currparent = currentv.parent
+                parentx = currparent.coords[0]
+                parenty = currparent.coords[1]
 
-                #Cost between parent and s'
-                distance=math.sqrt(pow((nx-parentx),2)+pow((ny-parenty),2))
+                # Cost between parent and s'
+                distance = math.sqrt(pow((nx - parentx), 2) + pow((ny - parenty), 2))
 
                 if lineofsight(parentx, parenty, nx, ny):
                     if currparent.gvalue + distance < n.gvalue:
-                        n.gvalue=currparent.gvalue+distance
+                        n.gvalue = currparent.gvalue + distance
                         n.fvalue = n.hvalue + n.gvalue
-                        n.parent=currparent
+                        n.parent = currparent
                         if n in fringe:
                             fringe.remove(n)
                         heapq.heapify(fringe)
                         heapq.heappush(fringe, n)
                 else:
                     # See if path cost is less
-                    if gs==float("inf") or gs + cost < n.gvalue:
+                    if gs == float("inf") or gs + cost < n.gvalue:
                         n.gvalue = gs + cost
                         n.fvalue = n.hvalue + n.gvalue
                         n.parent = currentv
@@ -438,22 +447,22 @@ def Thetastar():
     print("No path found")
     return False
 
+
 def is_path_bfs():
-    startvertex=vertices[startindex]
-    visited=[]
-    q=[]
+    startvertex = vertices[startindex]
+    visited = []
+    q = []
     q.append(startvertex)
     while q:
-        currv=q.pop(0)
-        nlist=currv.neighbors
+        currv = q.pop(0)
+        nlist = currv.neighbors
         for element in nlist:
             if element not in visited:
                 q.append(element)
                 visited.append(element)
-            if element.coords[0]==goalx and element.coords[1]==goaly:
+            if element.coords[0] == goalx and element.coords[1] == goaly:
                 return True
     return False
-
 
 
 main()
