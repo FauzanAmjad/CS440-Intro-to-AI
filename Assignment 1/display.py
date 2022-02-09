@@ -47,7 +47,7 @@ def main():
     grid_cols = 4
     grid_rows = 3
     grid_width = 480
-    grid_height = 360
+    grid_height = 240
     pygame.init()
     window = pygame.display.set_mode((grid_width * 3 / 2, grid_height * 3 / 2))
     window.fill((255, 255, 255))
@@ -268,9 +268,9 @@ def lineofsight(sourcex, sourcey,pointx, pointy):
                 addx0 = 0
             if sy == 1:
                 addy0 = 0
-            blocked= data[x0+addx0-1][y0+addy0-1]
-            blocked2=data[x0+addx0-1][y0-1]
-            blocked3=data[x0+addx0-1][y0-1-1]
+            blocked= data[y0+addy0-1][x0+addx0-1]
+            blocked2=data[y0-1][x0+addx0-1]
+            blocked3=data[y0-1-1][x0+addx0-1]
             if f >= dx:
                 if blocked == 1:
                     return False
@@ -293,9 +293,9 @@ def lineofsight(sourcex, sourcey,pointx, pointy):
                 addx0 = 0
             if sy == 1:
                 addy0 = 0
-            blocked= data[x0+addx0-1][y0+addy0-1]
-            blocked2=data[x0-1][y0+addy0-1]
-            blocked3=data[x0-1-1][y0+addy0-1]
+            blocked= data[y0+addy0-1][x0+addx0-1]
+            blocked2=data[y0+addy0-1][x0-1]
+            blocked3=data[y0+addy0-1][x0-1-1]
             if f >= dy:
                 if blocked == 1:
                     return False
@@ -369,6 +369,16 @@ def Thetastar():
     for key in vertices:
         vertices[key].gvalue=math.inf
         vertices[key].fvalue=vertices[key].hvalue
+        vertices[key].parent=None
+        vertices[key].is_closed=False
+
+        #change h values
+        px=vertices[key].coords[0]
+        py=vertices[key].coords[1]
+        d = math.sqrt(pow((px - goalx), 2) + pow((py - goaly), 2))
+        vertices[key].hvalue=d
+        vertices[key].fvalue=d
+
     #Main part
     # Start
     vertices[startindex].parent = vertices[startindex]
@@ -408,6 +418,7 @@ def Thetastar():
                 if lineofsight(parentx, parenty, nx, ny):
                     if currparent.gvalue + distance < n.gvalue:
                         n.gvalue=currparent.gvalue+distance
+                        n.fvalue = n.hvalue + n.gvalue
                         n.parent=currparent
                         if n in fringe:
                             fringe.remove(n)
