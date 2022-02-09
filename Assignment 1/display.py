@@ -46,10 +46,11 @@ def main():
     readfile(sys.argv[1])
 
     # making the display
-    grid_cols = 4
-    grid_rows = 3
-    grid_width = 480
-    grid_height = 360
+    grid_cols = filewidth
+    grid_rows = filelength
+    cell_size = 120 if filewidth < 50 else 10
+    grid_width = cell_size*grid_cols
+    grid_height = cell_size*grid_rows
     pygame.init()
     window = pygame.display.set_mode((grid_width * 3 / 2, grid_height * 3 / 2))
     window.fill((255, 255, 255))
@@ -84,6 +85,9 @@ def main():
                 sys.exit()
 
             if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                if text_box is not None:
+                    text_box.hide()
+                    text_box = None
                 if event.ui_element == toggle:
                     if toggle_Astar:
                         toggle.select()
@@ -105,9 +109,6 @@ def main():
                 vertices[clicked].clickable.unselect()
                 for key in vertices:
                     if event.ui_element == vertices[key].clickable:
-                        if text_box is not None:
-                            text_box.hide()
-                            text_box = None
                         if not vertices[key].is_clicked:
                             vertices[key].clickable.select()
                             clicked = key
