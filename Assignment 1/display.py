@@ -276,9 +276,19 @@ def lineofsight(sourcex, sourcey, pointx, pointy):
                 addx0 = 0
             if sy == 1:
                 addy0 = 0
-            blocked = data[y0 + addy0 - 1][x0 + addx0 - 1]
-            blocked2 = data[y0 - 1][x0 + addx0 - 1]
-            blocked3 = data[y0 - 1 - 1][x0 + addx0 - 1]
+            blocked = 0
+            blocked2 = 0
+            blocked3 = 0
+            a1=y0-1
+            a2=y0-1-1
+            a3=x0 + addx0 - 1
+            if (((y0 + addy0 - 1)<filelength) and ((y0 + addy0 - 1)>=0)) and (((x0 + addx0 - 1)<filewidth) and ((x0 + addx0 - 1)>=0)):
+                blocked=data[y0 + addy0 - 1][x0 + addx0 - 1]
+            if (((y0 - 1)<filelength) and (y0-1)>=0) and (((x0 + addx0 - 1)<filewidth) and ((x0 + addx0 - 1)>=0)):
+                blocked2=data[y0 - 1][x0 + addx0 - 1]
+            if (((y0 - 1 - 1)<filelength) and ((y0-1-1)>=0)) and (((x0 + addx0 - 1)<filewidth) and ((x0 + addx0 - 1)>=0)):
+                blocked3=data[y0 - 1 - 1][x0 + addx0 - 1]
+
             if f >= dx:
                 if blocked == 1:
                     return False
@@ -301,9 +311,21 @@ def lineofsight(sourcex, sourcey, pointx, pointy):
                 addx0 = 0
             if sy == 1:
                 addy0 = 0
-            blocked = data[y0 + addy0 - 1][x0 + addx0 - 1]
-            blocked2 = data[y0 + addy0 - 1][x0 - 1]
-            blocked3 = data[y0 + addy0 - 1][x0 - 1 - 1]
+            blocked = 0
+            blocked2 = 0
+            blocked3 = 0
+            a1 = y0 - 1
+            a2 = y0 - 1 - 1
+            a3 = x0 + addx0 - 1
+            if (((y0 + addy0 - 1) < filelength) and ((y0 + addy0 - 1) >= 0)) and (
+                    ((x0 + addx0 - 1) < filewidth) and ((x0 + addx0 - 1) >= 0)):
+                blocked = data[y0 + addy0 - 1][x0 + addx0 - 1]
+            if (((y0 - 1) < filelength) and (y0 - 1) >= 0) and (
+                    ((x0 + addx0 - 1) < filewidth) and ((x0 + addx0 - 1) >= 0)):
+                blocked2 = data[y0 - 1][x0 + addx0 - 1]
+            if (((y0 - 1 - 1) < filelength) and ((y0 - 1 - 1) >= 0)) and (
+                    ((x0 + addx0 - 1) < filewidth) and ((x0 + addx0 - 1) >= 0)):
+                blocked3 = data[y0 - 1 - 1][x0 + addx0 - 1]
             if f >= dy:
                 if blocked == 1:
                     return False
