@@ -13,17 +13,12 @@
          {
              "shape": "ellipse",
              "tool_tip_delay": "0.10",
-             "text_horiz_alignment": "left",
-             "text_vert_alignment": "top",
-             "text_horiz_alignment_padding": "10",
-             "text_vert_alignment_padding": "5",
-             "text_shadow_size": "1",
-             "text_shadow_offset": "0,0",
              "state_transitions":
              {
                  "normal_hovered": "0.05",
                  "hovered_normal": "0.05"
-             }
+             },
+             "border_with": "0"
          }
      },
      "#important_button":
@@ -53,6 +48,36 @@
              }
          }
      },
+     "#toggle":
+     {
+         "colours":
+         {
+             "normal_bg": "#ff837a",
+             "hovered_bg": "#ffffff",
+             "selected_bg": "#7aa0ff",
+             "active_bg": "#c8d6f7",
+             "normal_text": "#ffffff",
+             "hovered_text": "#000000",
+             "selected_text": "#ffffff"
+
+         },
+         "misc":
+         {
+             "shape": "rectangle",
+             "tool_tip_delay": "0.10",
+             "text_horiz_alignment": "center",
+             "text_vert_alignment": "center",
+             "text_horiz_alignment_padding": "0",
+             "text_vert_alignment_padding": "0",
+             "text_shadow_size": "0",
+             "text_shadow_offset": "0,0",
+             "state_transitions":
+             {
+                 "normal_hovered": "0.05",
+                 "hovered_normal": "0.05"
+             }
+         }
+     },
      "text_box":
      {
          "colours":
@@ -62,14 +87,15 @@
              "normal_border": "#999999"
          },
 
+
          "misc":
          {
              "border_width": "1",
-             "padding": "10,10",
+             "padding": "0,0",
              "link_normal_underline": "0",
              "link_hover_underline": "1",
              "shadow_width": "2",
-             "text_horiz_alignment": "left"
+             "text_horiz_alignment": "right"
 
          }
      }

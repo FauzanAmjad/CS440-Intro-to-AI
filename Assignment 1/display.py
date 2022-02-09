@@ -16,14 +16,14 @@ blockedcells = []
 filelist = []
 startx = 1
 starty = 1
-startindex= (1,1)
-endindex= (5,4)
+startindex = (1, 1)
+endindex = (5, 4)
 goalx = 5
 goaly = 4
 blockedxcoord = []
 blockedycoord = []
-temparr= []
-directory=""
+temparr = []
+directory = ""
 RED = (255, 46, 31)
 BLUE = (69, 118, 255)
 
@@ -61,14 +61,19 @@ def main():
     text_box = None
     clicked = (1, 1)
     clock = pygame.time.Clock()
+    option_rect_1 = pygame.Rect(0, 0, grid_width * (1 / 4), grid_height)
+
+    button_pos = pygame.Rect(0, 0, grid_width * (1 / 8), 30)
+    button_pos.center = option_rect_1.center
+    toggle = pygame_gui.elements.UIButton(relative_rect=button_pos,
+                                          text="Θ*",
+                                          manager=manager, object_id="#toggle")
+    toggle_Astar = True
+
+    blank_cache = pygame.Surface.copy(window)
     Astar()
     draw_path(vertices[endindex], window, RED)
-    # Thetastar()
-    # draw_path(vertices[endindex], window, BLUE)
-
-    # make sure path is drawn before the image is cached
     cache = pygame.Surface.copy(window)
-
     # event loop
     while True:
         time_delta = clock.tick(60) / 1000.0
@@ -79,6 +84,24 @@ def main():
                 sys.exit()
 
             if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                if event.ui_element == toggle:
+                    print("click")
+                    if toggle_Astar:
+                        toggle.select()
+                        toggle.set_text("A*")
+                        window.blit(source=blank_cache, dest=(0, 0))
+                        Thetastar()
+                        draw_path(vertices[endindex], window, BLUE)
+                        cache = pygame.Surface.copy(window)
+                        toggle_Astar = False
+                    else:
+                        toggle.unselect()
+                        toggle.set_text("Θ*")
+                        window.blit(source=blank_cache, dest=(0, 0))
+                        Astar()
+                        draw_path(vertices[endindex], window, RED)
+                        cache = pygame.Surface.copy(window)
+                        toggle_Astar = True
                 window.blit(source=cache, dest=(0, 0))
                 vertices[clicked].clickable.unselect()
                 for key in vertices:
@@ -169,15 +192,16 @@ def readfile(filename):
                     if indicator == 1:
                         blockedxcoord.append(localx)
                         blockedycoord.append(localy)
-                        in1=localy-1
-                        in2=localx-1
-                        temparr[in1][in2]=1
+                        in1 = localy - 1
+                        in2 = localx - 1
+                        temparr[in1][in2] = 1
             startindex = (startx, starty)
             endindex = (goalx, goaly)
 
             internalcount = internalcount + 1
         count = count + 1
     data = temparr
+
 
 def draw_grid(window, width, height, cols, view, manager):
     global startindex
@@ -192,7 +216,7 @@ def draw_grid(window, width, height, cols, view, manager):
                 pygame.draw.rect(window, (174, 174, 174), rect)
             else:
                 # pygame.draw.rect(window, (0, 0, 0), rect, 1)
-                add_verts((x, y), (j+1, i+1), size)
+                add_verts((x, y), (j + 1, i + 1), size)
             i = i + 1
         j = j + 1
         i = 0
@@ -231,6 +255,14 @@ def draw_path(endpoint: vertex, window, color):
         pygame.draw.line(window, color, vert.img_coords, prev_point, 4)
         prev_point = vert.img_coords
         vert = vert.parent
+
+
+def refresh_path(endpoint: vertex):
+    if endpoint is None or endpoint.parent == endpoint:
+        return
+    refresh_path(endpoint.parent)
+    endpoint.parent = None
+
 
 
 def hfunction(pointx, pointy):
@@ -273,15 +305,18 @@ def lineofsight(sourcex, sourcey, pointx, pointy):
             blocked = 0
             blocked2 = 0
             blocked3 = 0
-            a1=y0-1
-            a2=y0-1-1
-            a3=x0 + addx0 - 1
-            if (((y0 + addy0 - 1)<filelength) and ((y0 + addy0 - 1)>=0)) and (((x0 + addx0 - 1)<filewidth) and ((x0 + addx0 - 1)>=0)):
-                blocked=data[y0 + addy0 - 1][x0 + addx0 - 1]
-            if (((y0 - 1)<filelength) and (y0-1)>=0) and (((x0 + addx0 - 1)<filewidth) and ((x0 + addx0 - 1)>=0)):
-                blocked2=data[y0 - 1][x0 + addx0 - 1]
-            if (((y0 - 1 - 1)<filelength) and ((y0-1-1)>=0)) and (((x0 + addx0 - 1)<filewidth) and ((x0 + addx0 - 1)>=0)):
-                blocked3=data[y0 - 1 - 1][x0 + addx0 - 1]
+            a1 = y0 - 1
+            a2 = y0 - 1 - 1
+            a3 = x0 + addx0 - 1
+            if (((y0 + addy0 - 1) < filelength) and ((y0 + addy0 - 1) >= 0)) and (
+                    ((x0 + addx0 - 1) < filewidth) and ((x0 + addx0 - 1) >= 0)):
+                blocked = data[y0 + addy0 - 1][x0 + addx0 - 1]
+            if (((y0 - 1) < filelength) and (y0 - 1) >= 0) and (
+                    ((x0 + addx0 - 1) < filewidth) and ((x0 + addx0 - 1) >= 0)):
+                blocked2 = data[y0 - 1][x0 + addx0 - 1]
+            if (((y0 - 1 - 1) < filelength) and ((y0 - 1 - 1) >= 0)) and (
+                    ((x0 + addx0 - 1) < filewidth) and ((x0 + addx0 - 1) >= 0)):
+                blocked3 = data[y0 - 1 - 1][x0 + addx0 - 1]
 
             if f >= dx:
                 if blocked == 1:
@@ -346,6 +381,9 @@ def Astar():
         hval = hfunction(tempx, tempy)
         vertices[key].hvalue = hval
         vertices[key].fvalue = hval
+        vertices[key].parent = None
+        vertices[key].is_closed = False
+        vertices[key].gvalue = math.inf
 
     # Start
     vertices[startindex].parent = None
@@ -422,7 +460,7 @@ def Thetastar():
             if n.is_closed == False:
                 # Update Vertex if applicable
                 gs = currentv.gvalue
-                # Determine path cost
+                # Determine path cost0
                 cost = 0
                 nx = n.coords[0]
                 ny = n.coords[1]
