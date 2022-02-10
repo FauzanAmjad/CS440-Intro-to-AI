@@ -1,6 +1,7 @@
 import pygame
 import pygame_gui
 import math
+import random
 
 
 class vertex:
@@ -50,4 +51,14 @@ class vertex:
             return False
 
     def __lt__(self, other):
-        return self.fvalue < other.fvalue
+        if self.fvalue==other.fvalue:
+            if self.gvalue>other.gvalue:
+                return True
+            elif self.gvalue<other.gvalue:
+                return False
+            else:
+                list1=[True,False]
+                return random.choice(list1)
+
+        else:
+            return self.fvalue < other.fvalue
