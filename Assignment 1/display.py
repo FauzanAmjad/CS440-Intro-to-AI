@@ -48,11 +48,11 @@ def main():
     # making the display
     grid_cols = filewidth
     grid_rows = filelength
-    cell_size = 120 if filewidth < 50 else 10
+    cell_size = 120 if filewidth < 50 else 16
     grid_width = cell_size*grid_cols
     grid_height = cell_size*grid_rows
     pygame.init()
-    window = pygame.display.set_mode((grid_width * 3 / 2, grid_height * 3 / 2))
+    window = pygame.display.set_mode((grid_width + 120, grid_height * 11 / 10))
     window.fill((255, 255, 255))
     view_rect = pygame.Rect(0, 0, grid_width, grid_height)
     view_rect.center = window.get_rect().center
@@ -62,9 +62,9 @@ def main():
     text_box = None
     clicked = next(iter(vertices))
     clock = pygame.time.Clock()
-    option_rect_1 = pygame.Rect(0, 0, grid_width * (1 / 4), grid_height)
+    option_rect_1 = pygame.Rect(0, 0, 60, grid_height)
 
-    button_pos = pygame.Rect(0, 0, grid_width * (1 / 8), 30)
+    button_pos = pygame.Rect(0, 0, 30, 30)
     button_pos.center = option_rect_1.center
     toggle = pygame_gui.elements.UIButton(relative_rect=button_pos,
                                           text="Θ*",
@@ -112,8 +112,7 @@ def main():
                         if not vertices[key].is_clicked:
                             vertices[key].clickable.select()
                             clicked = key
-                            rect = pygame.Rect(vertices[key].img_coords[0], vertices[key].img_coords[1], 120,
-                                               160)
+                            rect = pygame.Rect(vertices[key].img_coords[0], vertices[key].img_coords[1], 120, 120)
                             if vertices[key].coords[1] > grid_rows / 2:
                                 rect.bottomleft = (vertices[key].img_coords[0], vertices[key].img_coords[1])
                             if vertices[key].coords[0] > grid_cols / 2:
@@ -251,7 +250,7 @@ def add_verts(img_coords: tuple, coords: tuple, size):
 def draw_path(endpoint: vertex, window, color):
     vert = endpoint.parent
     prev_point = endpoint.img_coords
-    size = 4 if filewidth <50 else 2
+    size = 4 if filewidth <50 else 3
     while vert is not None and prev_point != vert.img_coords:
         pygame.draw.line(window, color, vert.img_coords, prev_point, size)
         prev_point = vert.img_coords
