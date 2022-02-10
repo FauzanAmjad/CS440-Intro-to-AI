@@ -309,7 +309,7 @@ def lineofsight(sourcex, sourcey, pointx, pointy):
             a2 = y0 - 1 - 1
             a3 = x0 + addx0 - 1
             if (((y0 + addy0 - 1) < filelength) and ((y0 + addy0 - 1) >= 0)) and (
-                    ((x0 + addx0 - 1) < filewidth) and ((x0 + addx0 - 1) >= 0)):
+                    ((x0 + (addx0 - 1)) < filewidth) and ((x0 + (addx0 - 1)) >= 0)):
                 blocked = data[y0 + addy0 - 1][x0 + addx0 - 1]
             if (((y0 - 1) < filelength) and (y0 - 1) >= 0) and (
                     ((x0 + addx0 - 1) < filewidth) and ((x0 + addx0 - 1) >= 0)):
