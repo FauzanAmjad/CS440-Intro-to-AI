@@ -2,6 +2,7 @@ import pygame, sys, os, pygame_gui
 from Vertex import vertex
 import heapq
 import math
+from Pathfinder import pathfinder
 
 data = [
     [0, 0, 0, 0],
@@ -48,9 +49,9 @@ def main():
     # making the display
     grid_cols = filewidth
     grid_rows = filelength
-    cell_size = 120 if filewidth < 50 else 16
-    grid_width = cell_size*grid_cols
-    grid_height = cell_size*grid_rows
+    cell_size = 120 if filewidth < 50 else 10
+    grid_width = cell_size * grid_cols
+    grid_height = cell_size * grid_rows
     pygame.init()
     window = pygame.display.set_mode((grid_width + 120, grid_height * 11 / 10))
     window.fill((255, 255, 255))
@@ -72,7 +73,8 @@ def main():
     toggle_Astar = True
 
     blank_cache = pygame.Surface.copy(window)
-    Astar()
+    pf = pathfinder(vertices, startx, starty, goalx, goaly, filewidth, filelength, data)
+    pf.Astar()
     draw_path(vertices[endindex], window, RED)
     cache = pygame.Surface.copy(window)
     # event loop
@@ -93,7 +95,7 @@ def main():
                         toggle.select()
                         toggle.set_text("A*")
                         window.blit(source=blank_cache, dest=(0, 0))
-                        Thetastar()
+                        pf.Thetastar()
                         draw_path(vertices[endindex], window, BLUE)
                         cache = pygame.Surface.copy(window)
                         toggle_Astar = False
@@ -101,7 +103,7 @@ def main():
                         toggle.unselect()
                         toggle.set_text("Θ*")
                         window.blit(source=blank_cache, dest=(0, 0))
-                        Astar()
+                        pf.Astar()
                         draw_path(vertices[endindex], window, RED)
                         cache = pygame.Surface.copy(window)
                         toggle_Astar = True
@@ -250,273 +252,14 @@ def add_verts(img_coords: tuple, coords: tuple, size):
 def draw_path(endpoint: vertex, window, color):
     vert = endpoint.parent
     prev_point = endpoint.img_coords
-    size = 4 if filewidth <50 else 3
+    size = 4 if filewidth < 50 else 3
     while vert is not None and prev_point != vert.img_coords:
         pygame.draw.line(window, color, vert.img_coords, prev_point, size)
         prev_point = vert.img_coords
         vert = vert.parent
 
 
-def refresh_path(endpoint: vertex):
-    if endpoint is None or endpoint.parent == endpoint:
-        return
-    refresh_path(endpoint.parent)
-    endpoint.parent = None
 
-
-
-def hfunction(pointx, pointy):
-    root2 = math.sqrt(2)
-    xminusgoal = abs(pointx - goalx)
-    yminusgoal = abs(pointy - goaly)
-    answer = (root2 * min(xminusgoal, yminusgoal)) + max(xminusgoal, yminusgoal) - min(xminusgoal, yminusgoal)
-    return answer
-
-
-def lineofsight(sourcex, sourcey, pointx, pointy):
-    x0 = sourcex
-    y0 = sourcey
-    x1 = pointx
-    y1 = pointy
-    f = 0
-    dy = y1 - y0
-    dx = x1 - x0
-    sy = 0
-    sx = 0
-    if dy < 0:
-        dy = -1 * dy
-        sy = -1
-    else:
-        sy = 1
-    if dx < 0:
-        dx = -1 * dx
-        sx = -1
-    else:
-        sx = 1
-    if dx >= dy:
-        while x0 != x1:
-            f = f + dy
-            addx0 = -1
-            addy0 = -1
-            if sx == 1:
-                addx0 = 0
-            if sy == 1:
-                addy0 = 0
-            blocked = 0
-            blocked2 = 0
-            blocked3 = 0
-            a1 = y0 - 1
-            a2 = y0 - 1 - 1
-            a3 = x0 + addx0 - 1
-            if (((y0 + addy0 - 1) < filelength) and ((y0 + addy0 - 1) >= 0)) and (
-                    ((x0 + (addx0 - 1)) < filewidth) and ((x0 + (addx0 - 1)) >= 0)):
-                blocked = data[y0 + addy0 - 1][x0 + addx0 - 1]
-            if (((y0 - 1) < filelength) and (y0 - 1) >= 0) and (
-                    ((x0 + addx0 - 1) < filewidth) and ((x0 + addx0 - 1) >= 0)):
-                blocked2 = data[y0 - 1][x0 + addx0 - 1]
-            if (((y0 - 1 - 1) < filelength) and ((y0 - 1 - 1) >= 0)) and (
-                    ((x0 + addx0 - 1) < filewidth) and ((x0 + addx0 - 1) >= 0)):
-                blocked3 = data[y0 - 1 - 1][x0 + addx0 - 1]
-
-            if f >= dx:
-                if blocked == 1:
-                    return False
-                y0 = y0 + sy
-                f = f - dx
-
-            if f != 0 and blocked == 1:
-                return False
-            if dy == 0 and blocked2 == 1 and blocked3 == 1:
-                return False
-            x0 = x0 + sx
-
-
-    else:
-        while (y0 != y1):
-            f = f + dx
-            addx0 = -1
-            addy0 = -1
-            if sx == 1:
-                addx0 = 0
-            if sy == 1:
-                addy0 = 0
-            blocked = 0
-            blocked2 = 0
-            blocked3 = 0
-            a1 = y0 - 1
-            a2 = y0 - 1 - 1
-            a3 = x0 + addx0 - 1
-            if (((y0 + addy0 - 1) < filelength) and ((y0 + addy0 - 1) >= 0)) and (
-                    ((x0 + addx0 - 1) < filewidth) and ((x0 + addx0 - 1) >= 0)):
-                blocked = data[y0 + addy0 - 1][x0 + addx0 - 1]
-            if (((y0 - 1) < filelength) and (y0 - 1) >= 0) and (
-                    ((x0 + addx0 - 1) < filewidth) and ((x0 + addx0 - 1) >= 0)):
-                blocked2 = data[y0 - 1][x0 + addx0 - 1]
-            if (((y0 - 1 - 1) < filelength) and ((y0 - 1 - 1) >= 0)) and (
-                    ((x0 + addx0 - 1) < filewidth) and ((x0 + addx0 - 1) >= 0)):
-                blocked3 = data[y0 - 1 - 1][x0 + addx0 - 1]
-            if f >= dy:
-                if blocked == 1:
-                    return False
-                x0 = x0 + sx
-                f = f - dy
-
-            if f != 0 and blocked == 1:
-                return False
-            if dx == 0 and blocked2 == 1 and blocked3 == 1:
-                return False
-            y0 = y0 + sy
-    return True
-
-
-def new_cmp_lt(self, a, b):
-    return a.fvalue < b.fvalue
-
-
-def Astar():
-    # Compute h for all of them
-    for key in vertices:
-        tempx = vertices[key].coords[0]
-        tempy = vertices[key].coords[1]
-        hval = hfunction(tempx, tempy)
-        vertices[key].hvalue = hval
-        vertices[key].fvalue = hval
-        vertices[key].parent = None
-        vertices[key].is_closed = False
-        vertices[key].gvalue = math.inf
-
-    # Start
-    vertices[startindex].parent = None
-    vertices[startindex].gvalue = 0
-    fringe = []
-    heapq.heappush(fringe, vertices[startindex])
-
-    while fringe:
-        currentv = heapq.heappop(fringe)
-        if currentv.coords[0] == goalx and currentv.coords[1] == goaly:
-            print("Path found")
-            return True
-        currentv.is_closed = True
-        currentneighborlist = currentv.neighbors
-        for n in currentneighborlist:
-            if n.is_closed == False:
-                # Update Vertex if applicable
-                gs = currentv.gvalue
-                # Determine path cost
-                cost = 0
-                nx = n.coords[0]
-                ny = n.coords[1]
-                currx = currentv.coords[0]
-                curry = currentv.coords[1]
-                if nx != currx and ny != curry:
-                    cost = math.sqrt(2)
-                else:
-                    cost = 1
-                # See if path cost is less
-                if gs == float("inf") or gs + cost < n.gvalue:
-                    n.gvalue = gs + cost
-                    n.fvalue = n.hvalue + n.gvalue
-                    n.parent = currentv
-                    if n in fringe:
-                        fringe.remove(n)
-                    heapq.heapify(fringe)
-
-                    heapq.heappush(fringe, n)
-
-    print("No path found")
-    return False
-
-
-def Thetastar():
-    # Reset f's and g's
-    for key in vertices:
-        vertices[key].gvalue = math.inf
-        vertices[key].fvalue = vertices[key].hvalue
-        vertices[key].parent = None
-        vertices[key].is_closed = False
-
-        # change h values
-        px = vertices[key].coords[0]
-        py = vertices[key].coords[1]
-        d = math.sqrt(pow((px - goalx), 2) + pow((py - goaly), 2))
-        vertices[key].hvalue = d
-        vertices[key].fvalue = d
-
-    # Main part
-    # Start
-    vertices[startindex].parent = vertices[startindex]
-    vertices[startindex].gvalue = 0
-    fringe = []
-    heapq.heappush(fringe, vertices[startindex])
-
-    while fringe:
-        currentv = heapq.heappop(fringe)
-        if currentv.coords[0] == goalx and currentv.coords[1] == goaly:
-            print("Path found")
-            return True
-        currentv.is_closed = True
-        currentneighborlist = currentv.neighbors
-        for n in currentneighborlist:
-            if n.is_closed == False:
-                # Update Vertex if applicable
-                gs = currentv.gvalue
-                # Determine path cost0
-                cost = 0
-                nx = n.coords[0]
-                ny = n.coords[1]
-                currx = currentv.coords[0]
-                curry = currentv.coords[1]
-                if nx != currx and ny != curry:
-                    cost = math.sqrt(2)
-                else:
-                    cost = 1
-
-                currparent = currentv.parent
-                parentx = currparent.coords[0]
-                parenty = currparent.coords[1]
-
-                # Cost between parent and s'
-                distance = math.sqrt(pow((nx - parentx), 2) + pow((ny - parenty), 2))
-
-                if lineofsight(parentx, parenty, nx, ny):
-                    if currparent.gvalue + distance < n.gvalue:
-                        n.gvalue = currparent.gvalue + distance
-                        n.fvalue = n.hvalue + n.gvalue
-                        n.parent = currparent
-                        if n in fringe:
-                            fringe.remove(n)
-                        heapq.heapify(fringe)
-                        heapq.heappush(fringe, n)
-                else:
-                    # See if path cost is less
-                    if gs == float("inf") or gs + cost < n.gvalue:
-                        n.gvalue = gs + cost
-                        n.fvalue = n.hvalue + n.gvalue
-                        n.parent = currentv
-                        if n in fringe:
-                            fringe.remove(n)
-                        heapq.heapify(fringe)
-                        heapq.heappush(fringe, n)
-
-    print("No path found")
-    return False
-
-
-def is_path_bfs():
-    startvertex = vertices[startindex]
-    visited = []
-    q = []
-    q.append(startvertex)
-    while q:
-        currv = q.pop(0)
-        nlist = currv.neighbors
-        for element in nlist:
-            if element not in visited:
-                q.append(element)
-                visited.append(element)
-            if element.coords[0] == goalx and element.coords[1] == goaly:
-                return True
-    return False
 
 
 main()
