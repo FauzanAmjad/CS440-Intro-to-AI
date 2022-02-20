@@ -74,8 +74,10 @@ def main():
 
     blank_cache = pygame.Surface.copy(window)
     pf = pathfinder(vertices, startx, starty, goalx, goaly, filewidth, filelength, data)
-    pf.Astar()
-    draw_path(vertices[endindex], window, RED)
+    asres=pf.Astar()
+
+    if asres==True:
+        draw_path(vertices[endindex], window, RED)
     cache = pygame.Surface.copy(window)
     # event loop
     while True:
@@ -95,16 +97,18 @@ def main():
                         toggle.select()
                         toggle.set_text("A*")
                         window.blit(source=blank_cache, dest=(0, 0))
-                        pf.Thetastar()
-                        draw_path(vertices[endindex], window, BLUE)
+                        psres=pf.Thetastar()
+                        if psres==True:
+                            draw_path(vertices[endindex], window, BLUE)
                         cache = pygame.Surface.copy(window)
                         toggle_Astar = False
                     else:
                         toggle.unselect()
                         toggle.set_text("Θ*")
                         window.blit(source=blank_cache, dest=(0, 0))
-                        pf.Astar()
-                        draw_path(vertices[endindex], window, RED)
+                        asres=pf.Astar()
+                        if asres==True:
+                            draw_path(vertices[endindex], window, RED)
                         cache = pygame.Surface.copy(window)
                         toggle_Astar = True
                 window.blit(source=cache, dest=(0, 0))
@@ -250,6 +254,8 @@ def add_verts(img_coords: tuple, coords: tuple, size):
 
 
 def draw_path(endpoint: vertex, window, color):
+
+
     vert = endpoint.parent
     prev_point = endpoint.img_coords
     size = 4 if filewidth < 50 else 3

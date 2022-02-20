@@ -21,6 +21,20 @@ class pathfinder:
         answer = (root2 * min(xminusgoal, yminusgoal)) + max(xminusgoal, yminusgoal) - min(xminusgoal, yminusgoal)
         return answer
 
+    def inisetup(self):
+        for key in self.vertices:
+            self.vertices[key].gvalue = math.inf
+            self.vertices[key].fvalue = self.vertices[key].hvalue
+            self.vertices[key].parent = None
+            self.vertices[key].is_closed = False
+
+            # change h values
+            px = self.vertices[key].coords[0]
+            py = self.vertices[key].coords[1]
+            d = math.sqrt(pow((px - self.goalx), 2) + pow((py - self.goaly), 2))
+            self.vertices[key].hvalue = d
+            self.vertices[key].fvalue = d
+
     def lineofsight(self, sourcex, sourcey, pointx, pointy):
         x0 = sourcex
         y0 = sourcey
@@ -120,32 +134,53 @@ class pathfinder:
         return a.fvalue < b.fvalue
 
     def Astar(self):
-        # Compute h for all of them
-        for key in self.vertices:
-            tempx = self.vertices[key].coords[0]
-            tempy = self.vertices[key].coords[1]
-            hval = self.hfunction(tempx, tempy)
-            self.vertices[key].hvalue = hval
-            self.vertices[key].fvalue = hval
-            self.vertices[key].parent = None
-            self.vertices[key].is_closed = False
-            self.vertices[key].gvalue = math.inf
 
+
+        start=self.vertices.get(self.startindex)
+        end=self.vertices.get(self.endindex)
+
+        if start==end:
+            print("Path found, Start/End Vertices Are the Same")
+            return True
+
+        if start==None or end==None:
+            print("Path not found, Start/End Vertices Invalid")
+            return False
         # Start
+        closed=set()
         self.vertices[self.startindex].parent = None
         self.vertices[self.startindex].gvalue = 0
+        tx=self.vertices[self.startindex].coords[0]
+        ty=self.vertices[self.startindex].coords[1]
+        hvalstart= self.hfunction(tx, ty)
+        self.vertices[self.startindex].hvalue = hvalstart
+        self.vertices[self.startindex].fvalue = hvalstart
         fringe = []
+        tempset=set(fringe)
         heapq.heappush(fringe, self.vertices[self.startindex])
+        tempset.add(self.vertices[self.startindex])
 
         while fringe:
             currentv = heapq.heappop(fringe)
+            tempset.remove(currentv)
             if currentv.coords[0] == self.goalx and currentv.coords[1] == self.goaly:
                 print("Path found")
                 return True
             currentv.is_closed = True
+            closed.add(currentv)
             currentneighborlist = currentv.neighbors
+
             for n in currentneighborlist:
-                if not n.is_closed:
+                if n not in closed:
+
+                    if n not in tempset:
+                        n.parent=None
+                        n.gvalue=math.inf
+                        tempx = n.coords[0]
+                        tempy = n.coords[1]
+                        hval = self.hfunction(tempx, tempy)
+                        n.hvalue=hval
+                        n.fvalue=hval
                     # Update Vertex if applicable
                     gs = currentv.gvalue
                     # Determine path cost
@@ -163,47 +198,69 @@ class pathfinder:
                         n.gvalue = gs + cost
                         n.fvalue = n.hvalue + n.gvalue
                         n.parent = currentv
-                        if n in fringe:
+
+                        if n in tempset:
                             fringe.remove(n)
+                            tempset.remove(n)
                         heapq.heapify(fringe)
 
                         heapq.heappush(fringe, n)
+                        tempset.add(n)
 
         print("No path found")
         return False
 
     def Thetastar(self):
-        # Reset f's and g's
-        for key in self.vertices:
-            self.vertices[key].gvalue = math.inf
-            self.vertices[key].fvalue = self.vertices[key].hvalue
-            self.vertices[key].parent = None
-            self.vertices[key].is_closed = False
 
-            # change h values
-            px = self.vertices[key].coords[0]
-            py = self.vertices[key].coords[1]
-            d = math.sqrt(pow((px - self.goalx), 2) + pow((py - self.goaly), 2))
-            self.vertices[key].hvalue = d
-            self.vertices[key].fvalue = d
+        start = self.vertices.get(self.startindex)
+        end = self.vertices.get(self.endindex)
+
+        if start==end:
+            print("Path found, Start/End Vertices Are the Same")
+            return True
+
+        if start == None or end == None:
+            print("Path not found, Start/End Vertices Invalid")
+            return False
+        # Reset f's and g's
+
 
         # Main part
         # Start
         self.vertices[self.startindex].parent = self.vertices[self.startindex]
         self.vertices[self.startindex].gvalue = 0
+        px = self.vertices[self.startindex].coords[0]
+        py = self.vertices[self.startindex].coords[1]
+        hvalstart = math.sqrt(pow((px - self.goalx), 2) + pow((py - self.goaly), 2))
+        self.vertices[self.startindex].hvalue = hvalstart
+        self.vertices[self.startindex].fvalue = hvalstart
         fringe = []
+        tempset=set(fringe)
+        closed=set()
+
         heapq.heappush(fringe, self.vertices[self.startindex])
+        tempset.add(self.vertices[self.startindex])
 
         while fringe:
             currentv = heapq.heappop(fringe)
+            tempset.remove(currentv)
             if currentv.coords[0] == self.goalx and currentv.coords[1] == self.goaly:
                 print("Path found")
                 return True
             currentv.is_closed = True
+            closed.add(currentv)
             currentneighborlist = currentv.neighbors
             for n in currentneighborlist:
-                if n.is_closed == False:
+                if n not in closed:
                     # Update Vertex if applicable
+                    if n not in tempset:
+                        n.parent = None
+                        n.gvalue = math.inf
+                        tempx = n.coords[0]
+                        tempy = n.coords[1]
+                        hval = math.sqrt(pow((tempx - self.goalx), 2) + pow((tempy - self.goaly), 2))
+                        n.hvalue = hval
+                        n.fvalue = hval
                     gs = currentv.gvalue
                     # Determine path cost0
                     cost = 0
@@ -228,20 +285,24 @@ class pathfinder:
                             n.gvalue = currparent.gvalue + distance
                             n.fvalue = n.hvalue + n.gvalue
                             n.parent = currparent
-                            if n in fringe:
+                            if n in tempset:
                                 fringe.remove(n)
+                                tempset.remove(n)
                             heapq.heapify(fringe)
                             heapq.heappush(fringe, n)
+                            tempset.add(n)
                     else:
                         # See if path cost is less
                         if gs == float("inf") or gs + cost < n.gvalue:
                             n.gvalue = gs + cost
                             n.fvalue = n.hvalue + n.gvalue
                             n.parent = currentv
-                            if n in fringe:
+                            if n in tempset:
                                 fringe.remove(n)
+                                tempset.remove(n)
                             heapq.heapify(fringe)
                             heapq.heappush(fringe, n)
+                            tempset.add(n)
 
         print("No path found")
         return False
