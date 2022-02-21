@@ -24,7 +24,6 @@ class pathfinder:
     def inisetup(self):
         for key in self.vertices:
             self.vertices[key].gvalue = math.inf
-            self.vertices[key].fvalue = self.vertices[key].hvalue
             self.vertices[key].parent = None
             self.vertices[key].is_closed = False
 
@@ -35,99 +34,66 @@ class pathfinder:
             self.vertices[key].hvalue = d
             self.vertices[key].fvalue = d
 
-    def lineofsight(self, sourcex, sourcey, pointx, pointy):
+    def grid(self, x, y):
+        x = int(x)
+        y = int(y)
+        if self.data[y-1][x-1] == 1:
+            return True
+        else:
+            return False
+
+    def lineofsight(self, sourcex, sourcey, destx, desty):
         x0 = sourcex
         y0 = sourcey
-        x1 = pointx
-        y1 = pointy
-        f = 0
+        x1 = destx
+        y1 = desty
+        x0c = sourcex
+        y0c = sourcey
+        x1c = destx
+        y1c = desty
         dy = y1 - y0
         dx = x1 - x0
-        sy = 0
-        sx = 0
-        if dy < 0:
-            dy = -1 * dy
-            sy = -1
-        else:
-            sy = 1
+        f = 0
         if dx < 0:
-            dx = -1 * dx
-            sx = -1
+            dx = -dx
+            x0c = -1
         else:
-            sx = 1
+            x0c = 1
+
+        if dy < 0:
+            dy = -dy
+            y0c = -1
+        else:
+            y0c = 1
+
         if dx >= dy:
             while x0 != x1:
                 f = f + dy
-                addx0 = -1
-                addy0 = -1
-                if sx == 1:
-                    addx0 = 0
-                if sy == 1:
-                    addy0 = 0
-                blocked = 0
-                blocked2 = 0
-                blocked3 = 0
-                a1 = y0 - 1
-                a2 = y0 - 1 - 1
-                a3 = x0 + addx0 - 1
-                if (((y0 + addy0 - 1) < self.filelength) and ((y0 + addy0 - 1) >= 0)) and (
-                        ((x0 + (addx0 - 1)) < self.filewidth) and ((x0 + (addx0 - 1)) >= 0)):
-                    blocked = self.data[y0 + addy0 - 1][x0 + addx0 - 1]
-                if (((y0 - 1) < self.filelength) and (y0 - 1) >= 0) and (
-                        ((x0 + addx0 - 1) < self.filewidth) and ((x0 + addx0 - 1) >= 0)):
-                    blocked2 = self.data[y0 - 1][x0 + addx0 - 1]
-                if (((y0 - 1 - 1) < self.filelength) and ((y0 - 1 - 1) >= 0)) and (
-                        ((x0 + addx0 - 1) < self.filewidth) and ((x0 + addx0 - 1) >= 0)):
-                    blocked3 = self.data[y0 - 1 - 1][x0 + addx0 - 1]
-
                 if f >= dx:
-                    if blocked == 1:
+                    if self.grid(x0 + ((x0c - 1) / 2), y0 + ((y0c - 1) / 2)):
                         return False
-                    y0 = y0 + sy
+                    y0 = y0 + y0c
                     f = f - dx
-
-                if f != 0 and blocked == 1:
+                if f != 0 and self.grid(x0 + ((x0c - 1) / 2), y0 + ((y0c - 1) / 2)):
                     return False
-                if dy == 0 and blocked2 == 1 and blocked3 == 1:
+                if dy == 0 and self.grid(x0 + ((x0c - 1) / 2), y0) and self.grid(x0 + ((x0c - 1) / 2), y0 - 1):
                     return False
-                x0 = x0 + sx
-
+                x0 = x0 + x0c
 
         else:
             while y0 != y1:
                 f = f + dx
-                addx0 = -1
-                addy0 = -1
-                if sx == 1:
-                    addx0 = 0
-                if sy == 1:
-                    addy0 = 0
-                blocked = 0
-                blocked2 = 0
-                blocked3 = 0
-                a1 = y0 - 1
-                a2 = y0 - 1 - 1
-                a3 = x0 + addx0 - 1
-                if (((y0 + addy0 - 1) < self.filelength) and ((y0 + addy0 - 1) >= 0)) and (
-                        ((x0 + addx0 - 1) < self.filewidth) and ((x0 + addx0 - 1) >= 0)):
-                    blocked = self.data[y0 + addy0 - 1][x0 + addx0 - 1]
-                if (((y0 - 1) < self.filelength) and (y0 - 1) >= 0) and (
-                        ((x0 + addx0 - 1) < self.filewidth) and ((x0 + addx0 - 1) >= 0)):
-                    blocked2 = self.data[y0 - 1][x0 + addx0 - 1]
-                if (((y0 - 1 - 1) < self.filelength) and ((y0 - 1 - 1) >= 0)) and (
-                        ((x0 + addx0 - 1) < self.filewidth) and ((x0 + addx0 - 1) >= 0)):
-                    blocked3 = self.data[y0 - 1 - 1][x0 + addx0 - 1]
                 if f >= dy:
-                    if blocked == 1:
-                        return False
-                    x0 = x0 + sx
+                    if self.grid(x0 + ((x0c - 1) / 2), y0 + ((y0c - 1) / 2)):
+                        return False;
+                    x0 = x0 + x0c
                     f = f - dy
+                if f != 0 and self.grid(x0 + ((x0c - 1) / 2), y0 + ((y0c - 1) / 2)):
+                    return False;
+                if dx == 0 and self.grid(x0, y0 + ((y0c - 1) / 2)) and self.grid(x0 - 1, y0 + ((y0c - 1) / 2)):
+                    return False
+                y0 = y0 + y0c
 
-                if f != 0 and blocked == 1:
-                    return False
-                if dx == 0 and blocked2 == 1 and blocked3 == 1:
-                    return False
-                y0 = y0 + sy
         return True
 
     def new_cmp_lt(self, a, b):
@@ -135,28 +101,27 @@ class pathfinder:
 
     def Astar(self):
 
+        start = self.vertices.get(self.startindex)
+        end = self.vertices.get(self.endindex)
 
-        start=self.vertices.get(self.startindex)
-        end=self.vertices.get(self.endindex)
-
-        if start==end:
+        if start == end:
             print("Path found, Start/End Vertices Are the Same")
             return True
 
-        if start==None or end==None:
+        if start == None or end == None:
             print("Path not found, Start/End Vertices Invalid")
             return False
         # Start
-        closed=set()
+        closed = set()
         self.vertices[self.startindex].parent = None
         self.vertices[self.startindex].gvalue = 0
-        tx=self.vertices[self.startindex].coords[0]
-        ty=self.vertices[self.startindex].coords[1]
-        hvalstart= self.hfunction(tx, ty)
+        tx = self.vertices[self.startindex].coords[0]
+        ty = self.vertices[self.startindex].coords[1]
+        hvalstart = self.hfunction(tx, ty)
         self.vertices[self.startindex].hvalue = hvalstart
         self.vertices[self.startindex].fvalue = hvalstart
         fringe = []
-        tempset=set(fringe)
+        tempset = set(fringe)
         heapq.heappush(fringe, self.vertices[self.startindex])
         tempset.add(self.vertices[self.startindex])
 
@@ -174,13 +139,13 @@ class pathfinder:
                 if n not in closed:
 
                     if n not in tempset:
-                        n.parent=None
-                        n.gvalue=math.inf
+                        n.parent = None
+                        n.gvalue = math.inf
                         tempx = n.coords[0]
                         tempy = n.coords[1]
                         hval = self.hfunction(tempx, tempy)
-                        n.hvalue=hval
-                        n.fvalue=hval
+                        n.hvalue = hval
+                        n.fvalue = hval
                     # Update Vertex if applicable
                     gs = currentv.gvalue
                     # Determine path cost
@@ -215,7 +180,7 @@ class pathfinder:
         start = self.vertices.get(self.startindex)
         end = self.vertices.get(self.endindex)
 
-        if start==end:
+        if start == end:
             print("Path found, Start/End Vertices Are the Same")
             return True
 
@@ -223,7 +188,6 @@ class pathfinder:
             print("Path not found, Start/End Vertices Invalid")
             return False
         # Reset f's and g's
-
 
         # Main part
         # Start
@@ -235,8 +199,8 @@ class pathfinder:
         self.vertices[self.startindex].hvalue = hvalstart
         self.vertices[self.startindex].fvalue = hvalstart
         fringe = []
-        tempset=set(fringe)
-        closed=set()
+        tempset = set(fringe)
+        closed = set()
 
         heapq.heappush(fringe, self.vertices[self.startindex])
         tempset.add(self.vertices[self.startindex])

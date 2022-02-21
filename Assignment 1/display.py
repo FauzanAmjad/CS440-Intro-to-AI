@@ -49,7 +49,7 @@ def main():
     # making the display
     grid_cols = filewidth
     grid_rows = filelength
-    cell_size = 120 if filewidth < 50 else 10
+    cell_size = 120 if filewidth < 50 else 15
     grid_width = cell_size * grid_cols
     grid_height = cell_size * grid_rows
     pygame.init()
